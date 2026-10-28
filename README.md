@@ -1,5 +1,7 @@
 # Trial Time Tracker
 
+**Open the app:** https://digiacco.github.io/mocktrial/
+
 A phone-friendly stopwatch for timing mock trials. It does what the "Trial Time Tracker" Google Sheet did and adds a live timer:
 
 - **One stopwatch** that you can start, pause (for objections or breaks), resume, and **Record** into the selected segment. Recording selects the next empty segment.
