@@ -16,6 +16,7 @@
 </head>
 <body>
 <header class="top">
+ <div class="wrap">
   <div class="title-row">
     <h1 id="roundTitle">Trial Time Tracker</h1>
     <button class="icon-btn" id="settingsBtn" aria-label="Settings">&#9881;</button>
@@ -32,33 +33,37 @@
       <div class="side-used"><span data-used="D">0:00</span> used</div>
     </div>
   </div>
+ </div>
 </header>
 
 <main>
   <p class="hint">Tap a segment to select it. Start the timer, pause it for objections or breaks, then tap <b>Record</b>. The time goes into the selected segment and the next empty one is selected.</p>
+  <p class="keys">Keyboard: <kbd>Space</kbd> start/pause &middot; <kbd>Enter</kbd> record &middot; <kbd>&uarr;</kbd><kbd>&darr;</kbd> change segment &middot; <kbd>U</kbd> undo &middot; <kbd>C</kbd> copy for Slack</p>
   <ol class="segments" id="segments"></ol>
 
   <section class="export">
     <h2>Slack summary</h2>
     <pre id="summary"></pre>
     <div class="export-btns">
-      <button class="btn primary" id="copyBtn">Copy for Slack</button>
+      <button class="btn primary" id="copyBtn" title="Copy for Slack (C)">Copy for Slack</button>
       <button class="btn" id="shareBtn" hidden>Share&hellip;</button>
     </div>
   </section>
 </main>
 
 <footer class="controls">
+ <div class="wrap controls-inner">
   <div class="now">
     <div class="now-label" id="nowLabel">Prosecution/Plaintiff Opening</div>
     <div class="clock" id="clock">0:00</div>
   </div>
   <div class="ctrl-btns">
-    <button class="btn small" id="resetBtn" aria-label="Reset stopwatch">Reset</button>
-    <button class="btn big go" id="startBtn">Start</button>
-    <button class="btn big rec" id="recordBtn">Record</button>
+    <button class="btn small" id="resetBtn" aria-label="Reset stopwatch" title="Reset stopwatch">Reset</button>
+    <button class="btn big go" id="startBtn" title="Start / pause (Space)">Start</button>
+    <button class="btn big rec" id="recordBtn" title="Record (Enter)">Record</button>
   </div>
-  <button class="undo" id="undoBtn" hidden>Undo</button>
+  <button class="undo" id="undoBtn" hidden title="Undo (U)">Undo</button>
+ </div>
 </footer>
 
 <dialog id="timeDlg">

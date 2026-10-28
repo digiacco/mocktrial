@@ -458,6 +458,30 @@ if (navigator.share) {
   });
 }
 
+// Keyboard shortcuts for computers. Ignored while a dialog is open or a text
+// field has focus so typing still works.
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.metaKey || e.ctrlKey) return;
+  if (document.querySelector('dialog[open]') || e.target.closest('input, select, textarea')) return;
+  const segs = allSegments();
+  const i = segs.findIndex(s => s.id === state.selected);
+  let handled = true;
+  switch (e.key) {
+    case ' ': startPause(); break;
+    case 'Enter': if (!$('recordBtn').disabled) record(); break;
+    case 'ArrowDown': if (i < segs.length - 1) { select(segs[i + 1].id); scrollToSelected(); } break;
+    case 'ArrowUp': if (i > 0) { select(segs[i - 1].id); scrollToSelected(); } break;
+    case 'u': case 'U': undo(); break;
+    case 'c': case 'C': copySummary(); break;
+    default: handled = false;
+  }
+  if (handled) {
+    e.preventDefault();
+    // Drop focus so Space/Enter don't also click whichever button was last clicked.
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  }
+});
+
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     if (state.timer.running) keepAwake(true);

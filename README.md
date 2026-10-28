@@ -22,6 +22,7 @@ A phone-friendly stopwatch for timing mock trials. It does what the "Trial Time 
   ```
 
 - Settings (gear icon): round name, time limit per side, warning threshold, the first side's name (e.g. "Prosecution" or "Plaintiff"), and **New trial**.
+- **On a computer:** keyboard shortcuts are <kbd>Space</kbd> start/pause, <kbd>Enter</kbd> record, <kbd>↑</kbd>/<kbd>↓</kbd> change segment, <kbd>U</kbd> undo, <kbd>C</kbd> copy for Slack. On wide screens the Slack summary sits beside the segment list.
 - Works offline after the first visit. Everything is saved on the phone, so a running timer stays correct if the screen locks or the app is closed.
 
 ## Installing on a phone
