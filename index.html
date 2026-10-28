@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trial Time Tracker</title>
+<meta name="description" content="Mock trial stopwatch that records time per segment and exports a Slack summary.">
+<meta name="theme-color" content="#1d3557">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trial Timer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="title-row">
+    <h1 id="roundTitle">Trial Time Tracker</h1>
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings">&#9881;</button>
+  </div>
+  <div class="sides">
+    <div class="side" id="sideP">
+      <div class="side-name" data-side-label="P">Prosecution/Plaintiff</div>
+      <div class="side-left"><span data-left="P">60:00</span> <small>left</small></div>
+      <div class="side-used"><span data-used="P">0:00</span> used</div>
+    </div>
+    <div class="side" id="sideD">
+      <div class="side-name">Defense</div>
+      <div class="side-left"><span data-left="D">60:00</span> <small>left</small></div>
+      <div class="side-used"><span data-used="D">0:00</span> used</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <p class="hint">Tap a segment to select it. Start the timer, pause it for objections or breaks, then tap <b>Record</b>. The time goes into the selected segment and the next empty one is selected.</p>
+  <ol class="segments" id="segments"></ol>
+
+  <section class="export">
+    <h2>Slack summary</h2>
+    <pre id="summary"></pre>
+    <div class="export-btns">
+      <button class="btn primary" id="copyBtn">Copy for Slack</button>
+      <button class="btn" id="shareBtn" hidden>Share&hellip;</button>
+    </div>
+  </section>
+</main>
+
+<footer class="controls">
+  <div class="now">
+    <div class="now-label" id="nowLabel">Prosecution/Plaintiff Opening</div>
+    <div class="clock" id="clock">0:00</div>
+  </div>
+  <div class="ctrl-btns">
+    <button class="btn small" id="resetBtn" aria-label="Reset stopwatch">Reset</button>
+    <button class="btn big go" id="startBtn">Start</button>
+    <button class="btn big rec" id="recordBtn">Record</button>
+  </div>
+  <button class="undo" id="undoBtn" hidden>Undo</button>
+</footer>
+
+<dialog id="timeDlg">
+  <form method="dialog">
+    <h3 id="timeDlgTitle">Edit time</h3>
+    <div class="mmss">
+      <label>Min<input id="editMin" type="number" inputmode="numeric" min="0" max="999"></label>
+      <span>:</span>
+      <label>Sec<input id="editSec" type="number" inputmode="numeric" min="0" max="59"></label>
+    </div>
+    <div class="dlg-btns">
+      <button class="btn" value="clear">Clear</button>
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="nameDlg">
+  <form method="dialog">
+    <h3 id="nameDlgTitle">Witness name</h3>
+    <input id="nameInput" type="text" autocomplete="off" placeholder="Witness name">
+    <p class="dlg-note" id="nameDlgNote"></p>
+    <div class="dlg-btns">
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="settingsDlg">
+  <form method="dialog">
+    <h3>Settings</h3>
+    <label class="field">Round name<input id="setRound" type="text" placeholder="e.g. Round 2 vs. Lincoln"></label>
+    <label class="field">Time limit per side (minutes)<input id="setLimit" type="number" inputmode="numeric" min="1"></label>
+    <label class="field">Warn when remaining is under (minutes)<input id="setWarn" type="number" inputmode="numeric" min="0"></label>
+    <label class="field">First side's name<input id="setPLabel" type="text" placeholder="Prosecution/Plaintiff"></label>
+    <div class="dlg-btns">
+      <button class="btn danger" value="newtrial">New trial</button>
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
