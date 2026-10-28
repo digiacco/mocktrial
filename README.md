@@ -6,7 +6,8 @@ A phone-friendly stopwatch for timing mock trials. It does what the "Trial Time 
 
 - **One stopwatch** that you can start, pause (for objections or breaks), resume, and **Record** into the selected segment. Recording selects the next empty segment.
 - **Live clocks for each side** show time used and time left, including the time currently running. A side's clock turns yellow under the warning threshold and red once it goes over.
-- Segments match the sheet: openings, direct/cross/redirect for 4 witnesses, closings, and rebuttal. Witnesses 1–2 are called by the Prosecution/Plaintiff and 3–4 by the Defense. Cross time counts against the side doing the crossing.
+- Segments match the sheet: openings, direct/cross/redirect/recross for 4 witnesses, closings, and rebuttal. Witnesses 1–2 are called by the Prosecution/Plaintiff and 3–4 by the Defense. Cross and recross count against the side doing the crossing. Recross is skipped when Record moves to the next segment; tap it to use it.
+- **+ Add segment** (bottom of the list) adds any other timed part of a trial. Pick which side it counts against, or "Neither side" to just record it. Tap ✎ on an added segment to rename or delete it. Added segments stay when you start a new trial.
 - Tap a time to fix it by hand, tap a witness header to type the witness's name, and use **Undo** to take back the last record.
 - **Copy for Slack** (or **Share…** on phones) produces the same summary as the sheet:
 

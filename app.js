@@ -1,9 +1,10 @@
 'use strict';
 
-// Segments match the Trial Time Tracker sheet. `side` is who the time counts
-// against: witnesses 1-2 are called by P, 3-4 by D, and cross goes to the
-// side doing the crossing.
-const SEGMENTS = [
+// Segments match the Trial Time Tracker sheet, plus recross. `side` is who the
+// time counts against: witnesses 1-2 are called by P, 3-4 by D, and cross and
+// recross go to the side doing the crossing. `optional` segments are skipped
+// when Record picks the next segment, since they are rarely used.
+const BASE_SEGMENTS = [
   { id: 'p-open', label: P => `${P} Opening`, side: 'P' },
   { id: 'd-open', label: () => 'Defense Opening', side: 'D' },
   ...[1, 2, 3, 4].flatMap(n => {
@@ -13,12 +14,21 @@ const SEGMENTS = [
       { id: `w${n}-direct`, witness: n, exam: 'Direct', side: caller },
       { id: `w${n}-cross`, witness: n, exam: 'Cross', side: other },
       { id: `w${n}-redirect`, witness: n, exam: 'Redirect', side: caller },
+      { id: `w${n}-recross`, witness: n, exam: 'Recross', side: other, optional: true },
     ];
   }),
   { id: 'p-close', label: P => `${P} Closing`, side: 'P' },
   { id: 'd-close', label: () => 'Defense Closing', side: 'D' },
   { id: 'p-rebuttal', label: P => `${P} Rebuttal`, side: 'P' },
 ];
+
+// Base segments followed by the ones added with "Add segment". A custom
+// segment's side can be 'N' (counts against neither side).
+function allSegments() {
+  return BASE_SEGMENTS.concat(state.custom.map(c => ({
+    id: c.id, custom: true, label: () => c.name, side: c.side,
+  })));
+}
 
 const STORAGE_KEY = 'trial-time-tracker-v1';
 
@@ -28,9 +38,10 @@ function freshState(prev) {
     limit: prev ? prev.limit : 60,
     warn: prev ? prev.warn : 5,
     pLabel: prev ? prev.pLabel : 'Prosecution/Plaintiff',
+    custom: prev ? prev.custom : [],  // added segments carry over to new trials
     witnesses: ['', '', '', ''],
     times: {},              // segment id -> seconds; missing means not used
-    selected: SEGMENTS[0].id,
+    selected: BASE_SEGMENTS[0].id,
     timer: { running: false, startedAt: null, accumulated: 0 },
     undo: null,             // { id, prev, selected } for the last record
   };
@@ -71,7 +82,7 @@ function segLabel(seg) {
 }
 
 function segById(id) {
-  return SEGMENTS.find(s => s.id === id);
+  return allSegments().find(s => s.id === id) || BASE_SEGMENTS[0];
 }
 
 function elapsedMs() {
@@ -85,10 +96,11 @@ function elapsedSec() {
 
 function sideTotals(includeLive) {
   const used = { P: 0, D: 0 };
-  for (const seg of SEGMENTS) {
-    if (state.times[seg.id] != null) used[seg.side] += state.times[seg.id];
+  for (const seg of allSegments()) {
+    if (state.times[seg.id] != null && seg.side in used) used[seg.side] += state.times[seg.id];
   }
-  if (includeLive) used[segById(state.selected).side] += elapsedMs() / 1000;
+  const liveSide = segById(state.selected).side;
+  if (includeLive && liveSide in used) used[liveSide] += elapsedMs() / 1000;
   const limit = state.limit * 60;
   return { used, left: { P: limit - used.P, D: limit - used.D } };
 }
@@ -99,7 +111,15 @@ function renderSegments() {
   const list = $('segments');
   list.innerHTML = '';
   let lastWitness = 0;
-  for (const seg of SEGMENTS) {
+  let customHead = false;
+  for (const seg of allSegments()) {
+    if (seg.custom && !customHead) {
+      customHead = true;
+      const head = document.createElement('li');
+      head.className = 'witness-head';
+      head.innerHTML = '<span class="group-name">Other segments</span>';
+      list.appendChild(head);
+    }
     if (seg.witness && seg.witness !== lastWitness) {
       lastWitness = seg.witness;
       const head = document.createElement('li');
@@ -117,12 +137,17 @@ function renderSegments() {
     li.innerHTML = `
       <button class="seg-main" data-select="${seg.id}">
         <span class="seg-name"></span>
-        <span class="tag tag-${seg.side}">${seg.side === 'P' ? 'P' : 'D'}</span>
+        <span class="tag tag-${seg.side}">${seg.side === 'N' ? '–' : seg.side}</span>
       </button>
+      ${seg.custom ? `<button class="seg-edit" data-custom="${seg.id}" aria-label="Edit segment">✎</button>` : ''}
       <button class="seg-time${t == null ? ' empty' : ''}" data-edit="${seg.id}" aria-label="Edit time">${t == null ? '—' : fmt(t)}</button>`;
     li.querySelector('.seg-name').textContent = seg.witness ? seg.exam : segLabel(seg);
     list.appendChild(li);
   }
+  const add = document.createElement('li');
+  add.className = 'add-seg';
+  add.innerHTML = '<button data-add-seg>+ Add segment</button>';
+  list.appendChild(add);
 }
 
 function renderSummary() {
@@ -189,7 +214,7 @@ function slackSummary() {
     '',
     '*By segment*',
   ];
-  for (const seg of SEGMENTS) {
+  for (const seg of allSegments()) {
     if (state.times[seg.id] != null) lines.push(`${segLabel(seg)}: ${fmt(state.times[seg.id])}`);
   }
   return lines.join('\n');
@@ -265,8 +290,9 @@ function record() {
     : `${segLabel(seg)}: ${fmt(sec)}`);
 
   // Move on to the next segment that has no time yet.
-  const i = SEGMENTS.findIndex(s => s.id === id);
-  const next = SEGMENTS.slice(i + 1).find(s => state.times[s.id] == null);
+  const segs = allSegments();
+  const i = segs.findIndex(s => s.id === id);
+  const next = segs.slice(i + 1).find(s => state.times[s.id] == null && !s.optional);
   if (next) state.selected = next.id;
 
   save();
@@ -339,6 +365,38 @@ function editWitness(n) {
   setTimeout(() => $('nameInput').focus(), 50);
 }
 
+function editCustom(id) {
+  const seg = id && state.custom.find(c => c.id === id);
+  const pName = state.pLabel || 'Prosecution/Plaintiff';
+  $('segDlgTitle').textContent = seg ? 'Edit segment' : 'Add segment';
+  $('segName').value = seg ? seg.name : '';
+  $('segSide').options[0].textContent = pName;
+  $('segSide').value = seg ? seg.side : 'P';
+  $('segDelete').hidden = !seg;
+  openDialog($('segDlg'), action => {
+    if (action === 'save') {
+      const name = $('segName').value.trim() || 'Other segment';
+      const side = $('segSide').value;
+      if (seg) Object.assign(seg, { name, side });
+      else {
+        const newId = 'c-' + Date.now().toString(36);
+        state.custom.push({ id: newId, name, side });
+        state.selected = newId;
+      }
+    } else if (action === 'delete') {
+      if (state.times[id] != null && !confirm(`Delete "${seg.name}" and its time?`)) return;
+      state.custom = state.custom.filter(c => c.id !== id);
+      delete state.times[id];
+      if (state.selected === id) state.selected = BASE_SEGMENTS[0].id;
+      state.undo = null;
+    } else return;
+    save();
+    renderStatic();
+    if (action === 'save' && !seg) scrollToSelected();
+  });
+  setTimeout(() => $('segName').focus(), 50);
+}
+
 function openSettings() {
   $('setRound').value = state.round;
   $('setLimit').value = state.limit;
@@ -378,7 +436,10 @@ $('segments').addEventListener('click', e => {
   const sel = e.target.closest('[data-select]');
   const edit = e.target.closest('[data-edit]');
   const wit = e.target.closest('[data-witness]');
-  if (sel) select(sel.dataset.select);
+  const custom = e.target.closest('[data-custom]');
+  if (e.target.closest('[data-add-seg]')) editCustom(null);
+  else if (custom) editCustom(custom.dataset.custom);
+  else if (sel) select(sel.dataset.select);
   else if (edit) editTime(edit.dataset.edit);
   else if (wit) editWitness(Number(wit.dataset.witness));
 });

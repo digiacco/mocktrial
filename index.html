@@ -89,6 +89,25 @@
   </form>
 </dialog>
 
+<dialog id="segDlg">
+  <form method="dialog">
+    <h3 id="segDlgTitle">Add segment</h3>
+    <label class="field">Name<input id="segName" type="text" autocomplete="off" placeholder="e.g. Pretrial motion"></label>
+    <label class="field">Counts against
+      <select id="segSide">
+        <option value="P">Prosecution/Plaintiff</option>
+        <option value="D">Defense</option>
+        <option value="N">Neither side (just record it)</option>
+      </select>
+    </label>
+    <div class="dlg-btns">
+      <button class="btn danger" id="segDelete" value="delete">Delete</button>
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="save">Save</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="settingsDlg">
   <form method="dialog">
     <h3>Settings</h3>

@@ -1,6 +1,6 @@
 // Caches the app so it works with no signal once it has been opened once.
 // Bump CACHE when any file changes so phones pick up the new version.
-const CACHE = 'trial-timer-v1';
+const CACHE = 'trial-timer-v2';
 const FILES = [
   './',
   'index.html',

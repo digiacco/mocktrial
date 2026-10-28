@@ -101,6 +101,19 @@ main { max-width: 640px; margin: 0 auto; padding: 12px; }
 .tag { font-size: 11px; font-weight: 700; border-radius: 4px; padding: 1px 5px; color: #fff; }
 .tag-P { background: var(--p); }
 .tag-D { background: var(--d); }
+.tag-N { background: var(--muted); }
+.seg-edit { background: none; border: 0; color: var(--muted); padding: 0 10px; font-size: 16px; }
+.group-name { font-weight: 700; }
+.add-seg { border-top: 1px solid var(--line); }
+.add-seg button {
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 14px 12px;
+  text-align: left;
+  color: var(--accent);
+  font-weight: 600;
+}
 .seg-time {
   min-width: 96px;
   background: none;
@@ -202,7 +215,7 @@ dialog {
 }
 dialog::backdrop { background: rgba(0,0,0,.45); }
 dialog h3 { margin: 0 0 12px; font-size: 17px; }
-dialog input {
+dialog input, dialog select {
   width: 100%;
   font: inherit;
   font-size: 18px;
